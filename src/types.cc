@@ -15,6 +15,7 @@
 #include <rime/dict/dictionary.h>
 #include <rime/dict/user_dictionary.h>
 #include <rime/switcher.h>
+#include <rime/language.h>
 #include "lua_gears.h"
 #include "lib/lua_templates.h"
 
@@ -141,11 +142,15 @@ namespace CandidateReg {
       p->set_preedit(v);
   }
 
-  an<T> make(const string type,
-                    size_t start, size_t end,
-                    const string text, const string comment)
-  {
-    return New<SimpleCandidate>(type, start, end, text, comment);
+  an<T> make(const string type, size_t start, size_t end, const string text, const string comment_or_code) {
+    static Language lang("luna_pinyin");
+      if (type == "phrase") {
+          auto entry = New<DictEntry>();
+          entry->custom_code = comment_or_code;
+          entry->text = text;
+          return New<Phrase>(&lang, type, start, end, entry);
+      } else
+          return New<SimpleCandidate>(type, start, end, text, comment_or_code);
   }
 
   static const luaL_Reg funcs[] = {
